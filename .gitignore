@@ -130,3 +130,5 @@ dmypy.json
 
 # idea
 .idea
+config.json
+gsheet_email_key.json
