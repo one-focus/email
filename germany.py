@@ -1,20 +1,43 @@
-import imaplib, email
+import re
+from multiprocessing import Pool
+from time import sleep
 
-from utils import gsheets, gmm
-from utils.gmm import Email
+from bs4 import BeautifulSoup
+from seleniumwire import webdriver
 
-gs = gsheets.GoogleSheets('mail_ru')
-
-emails_with_passwords = [item for item in gs.ws.get_all_values() if item[2]]
-emails_with_passwords.pop(0)
+from utils import gsheets, gmm, telegram
 
 
-username = 'visa.automation@mail.ru'
-password = 'v4fGvZquiJsXDAudh93H'
-text = Email().find_regex_in_email_with_title(username, password, "Полезные сервисы Mail.ru", 'https://mailer.mail.ru/pub/mailer/click/12536/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJsZXR0ZXJfaWQiOjEyNTM2LCJ0ZXN0aW5nIjowLCJwb3N0X3R5cGUiOiJDIiwiZW1haWwiOiJ2aXNhLmF1dG9tYXRpb25AbWFpbC5ydSIsInBvc3RfaWQiOjIyNCwic2VuZF91dWlkIjoiN2M1ZDNlNGMtYTczMi00YWY3LWI1NzktMGUzZWQwNmFhYzc5IiwibGFuZ3VhZ2UiOiJydSIsInVybF9pZCI6MjE0MzExLCJ1cmwiOiJodHRwczovL2hlbHAubWFpbC5ydS9jYWxlbmRhci1oZWxwL2Fib3V0P3V0bV9zb3VyY2U9Z21haWxlcl9ta3QmdXRtX21lZGl1bT1lbWFpbCZ1dG1fY2FtcGFpZ249d2VsY29tZV9lbWFpbF85JnV0bV90ZXJtPWNhbGVuZGFyIn0.P2_snVaGF7FEdXtdbXWDVqCTceZf06vNGeaFgpQPdh0?mlr-mailru-auth=1')
-
-print()
-# зайти на почту, проверить есть ли новые письма
-# зайти в новое письмо и открыть ссылку
-# решить капчу и законфирмить
-# отправить в телеграм страницу успешной реги
+if __name__ == "__main__":
+    while True:
+        try:
+            gs = gsheets.GoogleSheets('germany')
+            emails = gs.ws.get_all_values()[2:]
+            for e in emails:
+                try:
+                    print(e)
+                    soup = gmm.find_regex_in_email_with_title(e[1], e[2], 'Terminvereinbarung')
+                    for s in soup:
+                        print(soup)
+                        element = s.find("a", href=lambda
+                            href: href and "https://service2.diplo.de/rktermin/extern/confirmation_appointment.do?" in href)
+                        options = webdriver.ChromeOptions()
+                        options.headless = True
+                        driver = webdriver.Chrome(options=options)
+                        driver.get(element['href'].replace('&amp;', '&').replace('request_locale=de', 'request_locale=ru'))
+                        ps = BeautifulSoup(driver.page_source, "lxml")
+                        if confirmation := ps.find('fieldset'):
+                            try:
+                                confirmation = ' '.join(ps.find('fieldset').text.split())
+                                time = re.findall('время:(.*?)Место', confirmation)[0].strip()
+                                passport = re.findall('Visumbewerbers :(.*?)Grund', confirmation)[0].strip()
+                                telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nВремя: {time}\nПаспорт: {passport}', str(ps))
+                            except Exception as ex:
+                                telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(e)}', str(ps))
+                        else:
+                            telegram.send_doc(f'🔴💌 Германия НЕ подтвержден email({e[1]})', str(ps))
+                except Exception as ex:
+                    telegram.send_message(f'🔴💌 Германия ошибка проверки почты({e[1]}): {str(ex)}')
+                sleep(1)
+        except Exception as ex:
+            telegram.send_message(f'Ошибка проверки почты: {str(ex)}')

@@ -6,27 +6,34 @@ import re
 from bs4 import BeautifulSoup
 
 
-class Email:
+def get_imap(username):
+    if any(word in username for word in ('mail.ru', 'internet.ru', 'bk.ru', 'list.ru', 'inbox.ru')):
+        return 'imap.mail.ru'
 
-    def make_seen(self, username, password):
-        mail = imaplib.IMAP4_SSL('imap.{}'.format(username.split("@")[1]))
-        mail.login(username, password)
-        mail.list()
-        mail.select('inbox')
+
+def make_seen(username, password):
+    mail = imaplib.IMAP4_SSL(get_imap(username))
+    mail.login(username, password)
+    mail.list()
+    mail.select('inbox')
+    result, data = mail.uid('search', None, "UNSEEN")  # (ALL/UNSEEN)
+    i = len(data[0].split())  # emails count
+    for x in range(i):
+        latest_email_uid = data[0].split()[x]
+        mail.uid('fetch', latest_email_uid, '(RFC822)')
+
+
+def find_regex_in_email_with_title(username, password, subj, folders=None):
+    if folders is None:
+        folders = ["Inbox", "INBOX/Newsletters"]
+    mail = imaplib.IMAP4_SSL(get_imap(username))
+    mail.login(username, password)
+    mail.list()
+    s = []
+    for folder in folders:
+        mail.select(folder)
         result, data = mail.uid('search', None, "UNSEEN")  # (ALL/UNSEEN)
         i = len(data[0].split())  # emails count
-        for x in range(i):
-            latest_email_uid = data[0].split()[x]
-            mail.uid('fetch', latest_email_uid, '(RFC822)')
-
-    def find_regex_in_email_with_title(self, username, password, subj, regex):
-        mail = imaplib.IMAP4_SSL('imap.{}'.format(username.split("@")[1]))
-        mail.login(username, password)
-        mail.list()
-        mail.select('inbox')
-        result, data = mail.uid('search', None, "UNSEEN")  # (ALL/UNSEEN)
-        i = len(data[0].split())  # emails count
-        found = ""
         for x in range(i):
             latest_email_uid = data[0].split()[x]
             result, email_data = mail.uid('fetch', latest_email_uid, '(RFC822)')
@@ -48,11 +55,18 @@ class Email:
                     if part.get_content_type() == "text/html":
                         body = part.get_payload(decode=True)
                         soup = BeautifulSoup(body.decode('utf-8'), "lxml")
-                        element = soup.find_all("div", {'style': 'margin-left: 20%;'})
-                        date_slots = [link.find("a")['href'].split('=')[-1] for link in element]
+                        s.append(soup)
                         break
                     else:
                         continue
-                break
-        print("found: ", found)
-        return found
+    return s
+
+
+def clear_mailbox(username, password):
+    mail = imaplib.IMAP4_SSL(get_imap(username))
+    mail.login(username, password)
+    mail.list()
+    mail.select('inbox')
+    typ, data = mail.search(None, 'ALL')
+    for num in data[0].split():
+        mail.store(num, '+FLAGS', '\\Deleted')
