@@ -1,2 +1,3 @@
 gspread
 beautifulsoup4
+selenium

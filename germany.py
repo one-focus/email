@@ -3,7 +3,7 @@ from multiprocessing import Pool
 from time import sleep
 
 from bs4 import BeautifulSoup
-from seleniumwire import webdriver
+from selenium import webdriver
 
 from utils import gsheets, gmm, telegram
 
