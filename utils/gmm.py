@@ -24,11 +24,12 @@ def make_seen(username, password):
 
 
 def find_regex_in_email_with_title(username, password, subj, folders=None):
-    if folders is None:
-        folders = ["Inbox", "INBOX/Newsletters"]
     mail = imaplib.IMAP4_SSL(get_imap(username))
     mail.login(username, password)
     mail.list()
+    folders = []
+    for i in mail.list()[1]:
+        folders.append(i.decode().split(' "/" ')[1].replace('"',''))
     s = []
     for folder in folders:
         mail.select(folder)
