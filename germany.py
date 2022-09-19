@@ -50,3 +50,4 @@ if __name__ == "__main__":
         except Exception as ex:
             telegram.send_message(f'Ошибка проверки почты: {str(ex)}')
         sleep(30)
+        print('---')
