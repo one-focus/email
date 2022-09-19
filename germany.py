@@ -1,3 +1,4 @@
+import logging
 import re
 from multiprocessing import Pool
 from time import sleep
@@ -18,10 +19,10 @@ if __name__ == "__main__":
                 errors = []
                 for _ in range(5):
                     try:
-                        print(e)
+                        logging.warning(e)
                         soup = gmm.find_regex_in_email_with_title(e[1], e[2], 'Terminvereinbarung')
                         for s in soup:
-                            print(soup)
+                            logging.warning(soup)
                             element = s.find("a", href=lambda
                                 href: href and "https://service2.diplo.de/rktermin/extern/confirmation_appointment.do?" in href)
                             options = webdriver.ChromeOptions()
@@ -50,4 +51,4 @@ if __name__ == "__main__":
         except Exception as ex:
             telegram.send_message(f'Ошибка проверки почты: {str(ex)}')
         sleep(30)
-        print('---')
+        logging.warning('---')
