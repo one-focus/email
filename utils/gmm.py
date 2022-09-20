@@ -34,7 +34,7 @@ def find_regex_in_email_with_title(username, password, subj, folders=None):
     s = []
     for folder in folders:
         mail.select(folder)
-        result, data = mail.uid('search', None, "SEEN")  # (ALL/UNSEEN)
+        result, data = mail.uid('search', None, "UNSEEN")  # (ALL/UNSEEN)
         i = len(data[0].split())  # emails count
         for x in range(i):
             latest_email_uid = data[0].split()[x]
