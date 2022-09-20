@@ -44,6 +44,7 @@ if __name__ == "__main__":
                         break
                     except Exception as ex:
                         errors.append(str(ex))
+                        telegram.send_message(f'Email error: {str(ex)}')
                         sleep(1)
                 else:
                     telegram.send_message(f'🔴💌 Германия ошибка проверки почты({e[1]}): {errors}')
