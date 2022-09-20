@@ -2,3 +2,4 @@ gspread
 beautifulsoup4
 selenium
 pyTelegramBotAPI
+bs4
