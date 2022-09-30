@@ -24,7 +24,7 @@ def make_seen(username, password):
         mail.uid('fetch', latest_email_uid, '(RFC822)')
 
 
-def find_regex_in_email_with_title(username, password, subj, folders=None):
+def find_regex_in_email_with_title(username, password, subj, seen_type="UNSEEN"):
     mail = imaplib.IMAP4_SSL(get_imap(username))
     mail.login(username, password)
     mail.list()
@@ -33,8 +33,8 @@ def find_regex_in_email_with_title(username, password, subj, folders=None):
         folders.append(i.decode().split(' "/" ')[1].replace('"',''))
     s = []
     for folder in folders:
-        mail.select(folder)
-        result, data = mail.uid('search', None, "UNSEEN")  # (ALL/UNSEEN)
+        mail.select(f'"{folder}"')
+        result, data = mail.uid('search', None, seen_type)  # (ALL/UNSEEN)
         i = len(data[0].split())  # emails count
         for x in range(i):
             latest_email_uid = data[0].split()[x]
