@@ -35,9 +35,9 @@ if __name__ == "__main__":
                                     confirmation = ' '.join(ps.find('fieldset').text.split())
                                     time = re.findall('время:(.*?)Место', confirmation)[0].strip()
                                     passport = re.findall('Visumbewerbers :(.*?)Grund', confirmation)[0].strip()
-                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nВремя: {time}\nПаспорт: {passport}', str(ps))
+                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nВремя: {time}\nПаспорт: {passport}', str(ps), debug=False)
                                 except Exception as ex:
-                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(e)}', str(ps))
+                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(e)}', str(ps), debug=False)
                             else:
                                 telegram.send_doc(f'🔴💌 Германия НЕ подтвержден email({e[1]})', str(ps))
                             gs.ws.update_acell(f'F{int(e[0])+1}', int(e[5])-1)
