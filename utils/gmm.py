@@ -50,6 +50,7 @@ def find_regex_in_email_with_title(username, password, subj, seen_type="UNSEEN")
             email_from = str(email.header.make_header(email.header.decode_header(email_message['From'])))
             email_to = str(email.header.make_header(email.header.decode_header(email_message['To'])))
             subject = str(email.header.make_header(email.header.decode_header(email_message['Subject'])))
+            print(f'Subject: {subject}')
             # Body details
             if subj in subject:
                 for part in email_message.walk():

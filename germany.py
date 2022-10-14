@@ -28,14 +28,18 @@ if __name__ == "__main__":
                             options = webdriver.ChromeOptions()
                             options.headless = True
                             driver = webdriver.Chrome(options=options)
-                            driver.get(element['href'].replace('&amp;', '&').replace('request_locale=de', 'request_locale=ru'))
+                            link = element['href'].replace('&amp;', '&').replace('request_locale=de', 'request_locale=ru')
+                            driver.get(link)
                             ps = BeautifulSoup(driver.page_source, "lxml")
                             if confirmation := ps.find('fieldset'):
                                 try:
                                     confirmation = ' '.join(ps.find('fieldset').text.split())
                                     time = re.findall('время:(.*?)Место', confirmation)[0].strip()
                                     passport = re.findall('Visumbewerbers :(.*?)Grund', confirmation)[0].strip()
-                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nВремя: {time}\nПаспорт: {passport}', str(ps), debug=False)
+                                    surname = re.findall('Фамилия:(.*?)Электронная почта:', confirmation)[0].strip().replace('Имя: ', '')
+                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nВремя: {time} Паспорт: {passport}\n{link}', str(ps), debug=False)
+                                    gs.ws.update_acell(f'H{int(e[0])+1}', link)
+                                    gs.ws.update_acell(f'I{int(e[0])+1}', time)
                                 except Exception as ex:
                                     telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(e)}', str(ps), debug=False)
                             else:
