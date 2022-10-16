@@ -37,13 +37,14 @@ if __name__ == "__main__":
                                     time = re.findall('время:(.*?)Место', confirmation)[0].strip()
                                     passport = re.findall('Visumbewerbers :(.*?)Grund', confirmation)[0].strip()
                                     surname = re.findall('Фамилия:(.*?)Электронная почта:', confirmation)[0].strip().replace('Имя: ', '')
-                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nВремя: {time} Паспорт: {passport}\n{link}', str(ps), debug=False)
-                                    gs.ws.update_acell(f'H{int(e[0])+1}', link)
-                                    gs.ws.update_acell(f'I{int(e[0])+1}', time)
+                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\n{surname}({time})\n{link}', str(ps), debug=False)
+                                    gs.ws.update_acell(f'G{int(e[0])+1}', surname)
+                                    gs.ws.update_acell(f'H{int(e[0])+1}', time)
+                                    gs.ws.update_acell(f'I{int(e[0])+1}', link)
                                 except Exception as ex:
                                     telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(e)}', str(ps), debug=False)
                             else:
-                                telegram.send_doc(f'🔴💌 Германия НЕ подтвержден email({e[1]})', str(ps))
+                                telegram.send_doc(f'🔴💌 Германия НЕ подтвержден email({e[1]})', str(ps), debug=False)
                             gs.ws.update_acell(f'F{int(e[0])+1}', int(e[5])-1)
                         break
                     except Exception as ex:
