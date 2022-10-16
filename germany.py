@@ -1,4 +1,7 @@
+import base64
+import json
 import logging
+import os
 import re
 from multiprocessing import Pool
 from time import sleep
@@ -20,12 +23,25 @@ if __name__ == "__main__":
                 for _ in range(5):
                     try:
                         logging.warning(e)
-                        soup = gmm.find_regex_in_email_with_title(e[1], e[2], 'Terminvereinbarung')
+                        soup = gmm.find_regex_in_email_with_title(e[1], e[2], 'Terminvereinbarung', seen_type='SEEN')
                         for s in soup:
                             logging.warning(soup)
                             element = s.find("a", href=lambda
                                 href: href and "https://service2.diplo.de/rktermin/extern/confirmation_appointment.do?" in href)
                             options = webdriver.ChromeOptions()
+                            settings = {
+                                "recentDestinations": [{
+                                    "id": "Save as PDF",
+                                    "origin": "local",
+                                    "account": "",
+                                }],
+                                "selectedDestinationId": "Save as PDF",
+                                "version": 2
+                            }
+                            prefs = {'printing.print_preview_sticky_settings.appState': json.dumps(settings),
+                                       'savefile.default_directory': os.path.dirname(os.path.realpath(__file__))}
+                            options.add_experimental_option('prefs', prefs)
+                            options.add_argument('--kiosk-printing')
                             options.headless = True
                             driver = webdriver.Chrome(options=options)
                             link = element['href'].replace('&amp;', '&').replace('request_locale=de', 'request_locale=ru')
@@ -41,6 +57,10 @@ if __name__ == "__main__":
                                     gs.ws.update_acell(f'G{int(e[0])+1}', surname)
                                     gs.ws.update_acell(f'H{int(e[0])+1}', time)
                                     gs.ws.update_acell(f'I{int(e[0])+1}', link)
+                                    driver.execute_script(f'document.title = "{surname}"')
+                                    pdf_data = driver.execute_cdp_cmd("Page.printToPDF", settings)
+                                    with open(f'{surname}.pdf', 'wb') as file:
+                                        file.write(base64.b64decode(pdf_data['data']))
                                 except Exception as ex:
                                     telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(ex)}', str(ps), debug=False)
                             else:
