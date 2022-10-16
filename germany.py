@@ -42,7 +42,7 @@ if __name__ == "__main__":
                                     gs.ws.update_acell(f'H{int(e[0])+1}', time)
                                     gs.ws.update_acell(f'I{int(e[0])+1}', link)
                                 except Exception as ex:
-                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(e)}', str(ps), debug=False)
+                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(ex)}', str(ps), debug=False)
                             else:
                                 telegram.send_doc(f'🔴💌 Германия НЕ подтвержден email({e[1]})', str(ps), debug=False)
                             gs.ws.update_acell(f'F{int(e[0])+1}', int(e[5])-1)
