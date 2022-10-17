@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import re
-from multiprocessing import Pool
 from time import sleep
 
 from bs4 import BeautifulSoup
@@ -23,7 +22,7 @@ if __name__ == "__main__":
                 for _ in range(5):
                     try:
                         logging.warning(e)
-                        soup = gmm.find_regex_in_email_with_title(e[1], e[2], 'Terminvereinbarung', seen_type='SEEN')
+                        soup = gmm.find_regex_in_email_with_title(e[1], e[2], 'Terminvereinbarung', seen_type='UNSEEN')
                         for s in soup:
                             logging.warning(soup)
                             element = s.find("a", href=lambda
