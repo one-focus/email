@@ -4,6 +4,7 @@ import random
 import sys
 from datetime import datetime
 from time import sleep
+import http.client
 
 import requests
 
@@ -15,7 +16,8 @@ def get_users(vc_type):
     sleep(random.uniform(0, 1.5))
     if vc_type == 'Inviting':
         vc_type = ('Inviting', 'Buisness')
-    users = s.get(sys.argv[2].replace('"', ''))
+    http.client._MAXLINE = 655360
+    users = s.get(sys.argv[2], headers = {"Content-Type": "application/json; charset=UTF-8"})
     users = [user for user in json.loads(users.text) if user["vc_type"] in vc_type]
     return users
 
