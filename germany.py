@@ -81,6 +81,7 @@ if __name__ == "__main__":
                                         file.write(base64.b64decode(pdf_data['data']))
                                         us = get_user(e[1])
                                         logging.warning('5')
+                                        logging.warning(us)
                                         for u in us:
                                             logging.warning('6')
                                             users.update_fields(url=f'{sys.argv[2]}', id=u['id'],
@@ -88,7 +89,7 @@ if __name__ == "__main__":
                                                                 file=os.path.abspath(f"{surname}.pdf"))
                                             logging.warning('7')
                                             telegram.send_message(
-                                                f'📄Германия pdf добавлен в агент для {u["vc_surname"]} {u["vc_name"]}')
+                                                f'📄Германия pdf добавлен в агент для {u["vc_surname"]} {u["vc_name"]}', debug=False)
                                 except Exception as ex:
                                     telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(ex)}',
                                                       str(ps), debug=False)
