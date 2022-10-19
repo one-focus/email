@@ -35,4 +35,4 @@ jobs:
           json: ${{ secrets.CONFIG }}
       - name: Test python
         run: |
-          python3 germany.py $REST_PASSWORD $GERMANY_REST_URL
+          python3 germany.py "$REST_PASSWORD" "$GERMANY_REST_URL"
