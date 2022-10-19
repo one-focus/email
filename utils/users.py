@@ -1,5 +1,4 @@
 import json
-import logging
 import random
 import sys
 from datetime import datetime
@@ -9,7 +8,7 @@ import http.client
 import requests
 
 s = requests.Session()
-s.auth = ('rest_user', sys.argv[1].replace('"', ''))
+s.auth = ('rest_user', sys.argv[1])
 
 
 def get_users(vc_type):
