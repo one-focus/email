@@ -11,15 +11,20 @@ from selenium import webdriver
 
 from utils import gsheets, gmm, telegram, users
 
-def get_users(email):
-    us = users.get_users('Inviting') + users.get_users('Tourism')
 
+def get_user(email):
+    logging.warning('1')
+    us = users.get_users('Inviting') + users.get_users('Tourism')
+    logging.warning('2')
     user = [user for user in us if email in user['vc_comment']]
+    logging.warning('3')
     if user:
         user_id = user[0]['id']
         family = [user for user in us if user['vc_with'] == user_id]
         user = user + family
+    logging.warning('4')
     return user
+
 
 if __name__ == "__main__":
     while True:
@@ -53,7 +58,8 @@ if __name__ == "__main__":
                             options.add_argument('--kiosk-printing')
                             options.headless = True
                             driver = webdriver.Chrome(options=options)
-                            link = element['href'].replace('&amp;', '&').replace('request_locale=de', 'request_locale=ru')
+                            link = element['href'].replace('&amp;', '&').replace('request_locale=de',
+                                                                                 'request_locale=ru')
                             driver.get(link)
                             ps = BeautifulSoup(driver.page_source, "lxml")
                             if confirmation := ps.find('fieldset'):
@@ -61,8 +67,11 @@ if __name__ == "__main__":
                                     confirmation = ' '.join(ps.find('fieldset').text.split())
                                     time = re.findall('время:(.*?)Место', confirmation)[0].strip()
                                     passport = re.findall('Visumbewerbers :(.*?)Grund', confirmation)[0].strip()
-                                    surname = re.findall('Фамилия:(.*?)Электронная почта:', confirmation)[0].strip().replace('Имя: ', '')
-                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\n{surname}({time})\n{link}', str(ps), debug=False)
+                                    surname = re.findall('Фамилия:(.*?)Электронная почта:', confirmation)[
+                                        0].strip().replace('Имя: ', '')
+                                    telegram.send_doc(
+                                        f'🟩💌 Германия подтвержден email({e[1]}):\n{surname}({time})\n{link}', str(ps),
+                                        debug=False)
                                     gs.ws.update_acell(f'G{int(e[0]) + 1}', surname)
                                     gs.ws.update_acell(f'H{int(e[0]) + 1}', time)
                                     gs.ws.update_acell(f'I{int(e[0]) + 1}', link)
@@ -70,12 +79,19 @@ if __name__ == "__main__":
                                     pdf_data = driver.execute_cdp_cmd("Page.printToPDF", settings)
                                     with open(f'{surname}.pdf', 'wb') as file:
                                         file.write(base64.b64decode(pdf_data['data']))
-                                        us = get_users(e[1])
+                                        us = get_user(e[1])
+                                        logging.warning('5')
                                         for u in us:
-                                            users.update_fields(url=f'{sys.argv[2]}', id=u['id'], body={'vc_status': '4'}, file=os.path.abspath(f"{surname}.pdf"))
-                                            telegram.send_message(f'📄Германия pdf добавлен в агент для {u["vc_surname"]} {u["vc_name"]}')
+                                            logging.warning('6')
+                                            users.update_fields(url=f'{sys.argv[2]}', id=u['id'],
+                                                                body={'vc_status': '4'},
+                                                                file=os.path.abspath(f"{surname}.pdf"))
+                                            logging.warning('7')
+                                            telegram.send_message(
+                                                f'📄Германия pdf добавлен в агент для {u["vc_surname"]} {u["vc_name"]}')
                                 except Exception as ex:
-                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(ex)}', str(ps), debug=False)
+                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(ex)}',
+                                                      str(ps), debug=False)
                             else:
                                 telegram.send_doc(f'🔴💌 Германия НЕ подтвержден email({e[1]})', str(ps), debug=False)
                             gs.ws.update_acell(f'F{int(e[0]) + 1}', int(e[5]) - 1)
