@@ -3,13 +3,23 @@ import json
 import logging
 import os
 import re
+import sys
 from time import sleep
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
-from utils import gsheets, gmm, telegram
+from utils import gsheets, gmm, telegram, users
 
+def get_users(email):
+    us = users.get_users('Inviting') + users.get_users('Tourism')
+
+    user = [user for user in us if email in user['vc_comment']]
+    if user:
+        user_id = user[0]['id']
+        family = [user for user in us if user['vc_with'] == user_id]
+        user = user + family
+    return user
 
 if __name__ == "__main__":
     while True:
@@ -22,7 +32,7 @@ if __name__ == "__main__":
                 for _ in range(5):
                     try:
                         logging.warning(e)
-                        soup = gmm.find_regex_in_email_with_title(e[1], e[2], 'Terminvereinbarung', seen_type='UNSEEN')
+                        soup = gmm.find_regex_in_email_with_title(e[1], e[2], 'Terminvereinbarung', seen_type='SEEN')
                         for s in soup:
                             logging.warning(soup)
                             element = s.find("a", href=lambda
@@ -38,7 +48,7 @@ if __name__ == "__main__":
                                 "version": 2
                             }
                             prefs = {'printing.print_preview_sticky_settings.appState': json.dumps(settings),
-                                       'savefile.default_directory': os.path.dirname(os.path.realpath(__file__))}
+                                     'savefile.default_directory': os.path.dirname(os.path.realpath(__file__))}
                             options.add_experimental_option('prefs', prefs)
                             options.add_argument('--kiosk-printing')
                             options.headless = True
@@ -53,18 +63,22 @@ if __name__ == "__main__":
                                     passport = re.findall('Visumbewerbers :(.*?)Grund', confirmation)[0].strip()
                                     surname = re.findall('Фамилия:(.*?)Электронная почта:', confirmation)[0].strip().replace('Имя: ', '')
                                     telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\n{surname}({time})\n{link}', str(ps), debug=False)
-                                    gs.ws.update_acell(f'G{int(e[0])+1}', surname)
-                                    gs.ws.update_acell(f'H{int(e[0])+1}', time)
-                                    gs.ws.update_acell(f'I{int(e[0])+1}', link)
+                                    gs.ws.update_acell(f'G{int(e[0]) + 1}', surname)
+                                    gs.ws.update_acell(f'H{int(e[0]) + 1}', time)
+                                    gs.ws.update_acell(f'I{int(e[0]) + 1}', link)
                                     driver.execute_script(f'document.title = "{surname}"')
                                     pdf_data = driver.execute_cdp_cmd("Page.printToPDF", settings)
                                     with open(f'{surname}.pdf', 'wb') as file:
                                         file.write(base64.b64decode(pdf_data['data']))
+                                        us = get_users(e[1])
+                                        for u in us:
+                                            users.update_fields(url=f'{sys.argv[2]}', id=u['id'], body={'vc_status': '4'}, file=os.path.abspath(f"{surname}.pdf"))
+                                            telegram.send_message(f'📄Германия pdf добавлен в агент для {u["vc_surname"]} {u["vc_name"]}')
                                 except Exception as ex:
                                     telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(ex)}', str(ps), debug=False)
                             else:
                                 telegram.send_doc(f'🔴💌 Германия НЕ подтвержден email({e[1]})', str(ps), debug=False)
-                            gs.ws.update_acell(f'F{int(e[0])+1}', int(e[5])-1)
+                            gs.ws.update_acell(f'F{int(e[0]) + 1}', int(e[5]) - 1)
                         break
                     except Exception as ex:
                         errors.append(str(ex))

@@ -33,5 +33,5 @@ def update_status(url, id, status):
     s.post(url=f'{url}/{id}', params={"vc_status": f"{status}"})
 
 
-def update_fields(url, id, body):
-    s.post(url=f'{url}/{id}', params=body)
+def update_fields(url, id, body, file=None):
+    s.post(url=f'{url}/{id}', params=body, files={'file': open(file, 'rb')} if file else None)

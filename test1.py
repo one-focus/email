@@ -10,7 +10,7 @@ all_emails = gs.ws.get_all_values()
 
 links = []
 
-e = [e for e in all_emails if e[1] == 'lituletanxu9454@mail.ru'][0]
+e = [e for e in all_emails if e[1] == 'thomtheceahernfwen5841@mail.ru'][0]
 
 times = ''
 links = ''
@@ -19,6 +19,7 @@ username = e[1]
 password = e[2]
 soup = gmm.find_regex_in_email_with_title(username, password, 'Terminvereinbarung', "SEEN")
 for s in soup:
+    print(s)
     element = s.find("a", href=lambda href: href and "https://service2.diplo.de/rktermin/extern/confirmation_appointment.do?" in href)
     options = webdriver.ChromeOptions()
     options.headless = True
