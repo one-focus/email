@@ -37,7 +37,7 @@ if __name__ == "__main__":
                 for _ in range(5):
                     try:
                         logging.warning(e)
-                        soup = gmm.find_regex_in_email_with_title(e[1], e[2], 'Terminvereinbarung', seen_type='SEEN')
+                        soup = gmm.find_regex_in_email_with_title(e[1], e[2], 'Terminvereinbarung', seen_type='UNSEEN')
                         for s in soup:
                             logging.warning(soup)
                             element = s.find("a", href=lambda
@@ -66,12 +66,10 @@ if __name__ == "__main__":
                                 try:
                                     confirmation = ' '.join(ps.find('fieldset').text.split())
                                     time = re.findall('время:(.*?)Место', confirmation)[0].strip()
-                                    passport = re.findall('Visumbewerbers :(.*?)Grund', confirmation)[0].strip()
-                                    surname = re.findall('Фамилия:(.*?)Электронная почта:', confirmation)[
-                                        0].strip().replace('Имя: ', '')
-                                    telegram.send_doc(
-                                        f'🟩💌 Германия подтвержден email({e[1]}):\n{surname}({time})\n{link}', str(ps),
-                                        debug=False)
+                                    search_stop = 'Grund' if re.findall('Visumbewerbers :(.*?)Grund', confirmation) else 'Telefonnummer'
+                                    passport = re.findall(f'Visumbewerbers :(.*?){search_stop}', confirmation)[0].strip()
+                                    surname = re.findall('Фамилия:(.*?)Электронная почта:', confirmation)[0].strip().replace('Имя: ', '')
+                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\n{surname}({time})\n{link}', str(ps), debug=False)
                                     gs.ws.update_acell(f'G{int(e[0]) + 1}', surname)
                                     gs.ws.update_acell(f'H{int(e[0]) + 1}', time)
                                     gs.ws.update_acell(f'I{int(e[0]) + 1}', link)
@@ -80,19 +78,13 @@ if __name__ == "__main__":
                                     with open(f'{surname}.pdf', 'wb') as file:
                                         file.write(base64.b64decode(pdf_data['data']))
                                         us = get_user(e[1])
-                                        logging.warning('5')
-                                        logging.warning(us)
                                         for u in us:
-                                            logging.warning('6')
-                                            users.update_fields(url=f'{sys.argv[2]}', id=u['id'],
-                                                                body={'vc_status': '4'},
-                                                                file=os.path.abspath(f"{surname}.pdf"))
-                                            logging.warning('7')
-                                            telegram.send_message(
-                                                f'📄Германия pdf добавлен в агент для {u["vc_surname"]} {u["vc_name"]}', debug=False)
+                                            file = os.path.abspath(f"{surname}.pdf")
+                                            body = {'vc_status': '4', 'vc_comment': f'{u["vc_comment"]}|{link}|'}
+                                            users.update_fields(url=f'{sys.argv[2]}', id=u['id'], body=body, file=file)
+                                            telegram.send_message(f'📄Германия pdf добавлен в агент для {u["id"]} {u["vc_surname"]} {u["vc_name"]}', debug=False)
                                 except Exception as ex:
-                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\nОшибка: {str(ex)}',
-                                                      str(ps), debug=False)
+                                    telegram.send_doc(f'🟩🔴💌 Германия подтвержден email, необходимо добавить в агент руками({e[1]}):\nОшибка: {str(ex)}',str(ps), debug=False)
                             else:
                                 telegram.send_doc(f'🔴💌 Германия НЕ подтвержден email({e[1]})', str(ps), debug=False)
                             gs.ws.update_acell(f'F{int(e[0]) + 1}', int(e[5]) - 1)
