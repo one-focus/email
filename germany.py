@@ -80,7 +80,7 @@ if __name__ == "__main__":
                                         us = get_user(e[1])
                                         for u in us:
                                             file = os.path.abspath(f"{surname}.pdf")
-                                            body = {'vc_status': '4', 'vc_comment': f'{u["vc_comment"]}|{link}|'}
+                                            body = {'vc_status': '4', 'vc_comment': f'{u["vc_comment"]}|{link}|', 'vc_visit_date': time}
                                             users.update_fields(url=f'{sys.argv[2]}', id=u['id'], body=body, file=file)
                                             telegram.send_message(f'📄Германия pdf добавлен в агент для {u["id"]} {u["vc_surname"]} {u["vc_name"]}', debug=False)
                                 except Exception as ex:
