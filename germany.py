@@ -69,7 +69,7 @@ if __name__ == "__main__":
                                     search_stop = 'Grund' if re.findall('Visumbewerbers :(.*?)Grund', confirmation) else 'Telefonnummer'
                                     passport = re.findall(f'Visumbewerbers :(.*?){search_stop}', confirmation)[0].strip()
                                     surname = re.findall('Фамилия:(.*?)Электронная почта:', confirmation)[0].strip().replace('Имя: ', '')
-                                    telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\n{surname}({time})\n{link}', str(ps), debug=False)
+                                    # telegram.send_doc(f'🟩💌 Германия подтвержден email({e[1]}):\n{surname}({time})\n{link}', str(ps), debug=False)
                                     gs.ws.update_acell(f'G{int(e[0]) + 1}', surname)
                                     gs.ws.update_acell(f'H{int(e[0]) + 1}', time)
                                     gs.ws.update_acell(f'I{int(e[0]) + 1}', link)

@@ -22,7 +22,8 @@ from utils import gsheets, users, gmm
 # print()
 
 
-users.update_fields(url=f'{sys.argv[2]}', id='72', body={'vc_status': '2'})
+for u in ('507', '506', '505', '498', '473'):
+    users.update_fields(url=f'{sys.argv[2]}', id=u, body={'vc_status': '2'})
 # users.update_fields(url=f'{sys.argv[2]}', id='72', body={'vc_comment': f'FAKE|thomtheceahernfwen5841@mail.ru|'})
 
 # us = [u for u in us if '|' in u['vc_comment']]

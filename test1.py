@@ -10,14 +10,14 @@ all_emails = gs.ws.get_all_values()
 
 links = []
 
-e = [e for e in all_emails if e[1] == 'thomtheceahernfwen5841@mail.ru'][0]
+e = [e for e in all_emails if e[1] == 'viktor_gurov@internet.ru'][0]
 
 times = ''
 links = ''
 surnames = ''
 username = e[1]
 password = e[2]
-soup = gmm.find_regex_in_email_with_title(username, password, 'Terminvereinbarung', "SEEN")
+soup = gmm.find_regex_in_email_with_title(username, password, 'Terminvereinbarung', "UNSEEN")
 for s in soup:
     print(s)
     element = s.find("a", href=lambda href: href and "https://service2.diplo.de/rktermin/extern/confirmation_appointment.do?" in href)
