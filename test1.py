@@ -1,7 +1,7 @@
 import re
 
 from bs4 import BeautifulSoup
-from seleniumwire import webdriver
+from selenium import webdriver
 
 from utils import gmm, gsheets
 
@@ -17,7 +17,7 @@ links = ''
 surnames = ''
 username = e[1]
 password = e[2]
-soup = gmm.find_regex_in_email_with_title(username, password, 'Terminvereinbarung', "UNSEEN")
+soup = gmm.find_regex_in_email_with_title(username, password, 'Terminvereinbarung', "SEEN")
 for s in soup:
     print(s)
     element = s.find("a", href=lambda href: href and "https://service2.diplo.de/rktermin/extern/confirmation_appointment.do?" in href)
